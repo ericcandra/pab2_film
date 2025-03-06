@@ -12,25 +12,30 @@ class HomeScreen extends StatefulWidget {
 class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
 
-  List<Movie>_allMovies = [];
-  List<Movie>_trendingMovies = [];
-  List<Movie>_popularMovies = [];
+  List<Movie> _allMovies = [];
+  List<Movie> _trendingMovies = [];
+  List<Movie> _popularMovies = [];
+  bool _isLoading = true;
 
   Future<void> _loadMovies() async {
-    final List<Map<String, dynamic>> _allMoviesData = await _apiService.getAllMovies();
-    final List<Map<String, dynamic>> _trendingMoviesData = await _apiService.getTrendingMovies();
-    final List<Map<String, dynamic>> _popularMoviesData = await _apiService.getPopularMovies();
+    try {
+      final List<Map<String, dynamic>> _allMoviesData = await _apiService.getAllMovies();
+      final List<Map<String, dynamic>> _trendingMoviesData = await _apiService.getTrendingMovies();
+      final List<Map<String, dynamic>> _popularMoviesData = await _apiService.getPopularMovies();
     
-    setState(() {
-      _allMovies = _allMoviesData.map((e) => Movie.fromJson(e)).toList();
-      _trendingMovies = _trendingMoviesData.map((e) => Movie.fromJson(e)).toList();
-      _popularMovies = _popularMoviesData.map((e) => Movie.fromJson(e)).toList();
-    });
+      setState(() {
+        _allMovies = _allMoviesData.map((e) => Movie.fromJson(e)).toList();
+        _trendingMovies = _trendingMoviesData.map((e) => Movie.fromJson(e)).toList();
+        _popularMovies = _popularMoviesData.map((e) => Movie.fromJson(e)).toList();
+        _isLoading = false;
+      });
+    } catch (e) {
+      print("Error loading movies: $e");
+    }
   }
 
   @override
   void initState() {
-    // TODO: implement initState
     super.initState();
     _loadMovies();
   }
@@ -41,17 +46,18 @@ class _HomeScreenState extends State<HomeScreen> {
       appBar: AppBar(
         title: const Text('Film'),
       ),
-      body: SingleChildScrollView(
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          //TODO;PANGGIL METHOD YANG MENANMPILKAN ALL MOVIES, TRENDING DAN POPULAR MOVIES
-          children: [
-            _buildMovieList('All Movies', _allMovies),
-            _buildMovieList('Trending Movies', _trendingMovies),
-            _buildMovieList('Popular Movies', _popularMovies),
-          ],
-        ),
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  _buildMovieList('All Movies', _allMovies),
+                  _buildMovieList('Trending Movies', _trendingMovies),
+                  _buildMovieList('Popular Movies', _popularMovies),
+                ],
+              ),
+            ),
     );
   }
 
@@ -59,13 +65,13 @@ class _HomeScreenState extends State<HomeScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Padding(padding: const EdgeInsets.all(8.0),
-        child: Text(
-          title,
-          style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
+        Padding(
+          padding: const EdgeInsets.all(8.0),
+          child: Text(
+            title,
+            style: const TextStyle(fontSize: 20, fontWeight: FontWeight.bold),
           ),
         ),
-        //movie
         SizedBox(
           height: 200,
           child: ListView.builder(
@@ -75,24 +81,35 @@ class _HomeScreenState extends State<HomeScreen> {
               final Movie movie = movies[index];
               return GestureDetector(
                 onTap: () {},
-                child: Padding(padding: const EdgeInsets.all(8.0),
-                child: Column(
-                  children: [Image.network('https://image.tmdb.org/t/p/w500${movie.posterPath}',
-                  height: 150,
-                  width: 100,
-                  fit: BoxFit.cover,
+                child: Padding(
+                  padding: const EdgeInsets.all(8.0),
+                  child: Column(
+                    children: [
+                      movie.posterPath.isNotEmpty
+                          ? Image.network(
+                              'https://image.tmdb.org/t/p/w500${movie.posterPath}',
+                              height: 150,
+                              width: 100,
+                              fit: BoxFit.cover,
+                            )
+                          : Container(
+                              height: 150,
+                              width: 100,
+                              color: Colors.grey,
+                              child: const Icon(Icons.image_not_supported),
+                            ),
+                      const SizedBox(height: 5),
+                      Text(
+                        movie.title.length > 14
+                            ? '${movie.title.substring(0, 10)}...'
+                            : movie.title,
+                        style: const TextStyle(fontWeight: FontWeight.bold),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 5,),
-                  Text(
-                      movie.title.length > 14 ? '${movie.title.substring(0,10)}...' : 
-                      movie.title,
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ],
-                ),),
-                
+                ),
               );
-            }
+            },
           ),
         )
       ],
