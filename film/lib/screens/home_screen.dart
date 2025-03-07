@@ -1,4 +1,5 @@
 import 'package:film/models/movie.dart';
+import 'package:film/screens/detail_screen.dart';
 import 'package:film/services/api_service.dart';
 import 'package:flutter/material.dart';
 
@@ -80,7 +81,8 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context, index) {
               final Movie movie = movies[index];
               return GestureDetector(
-                onTap: () {},
+                onTap: () => Navigator.push(context, 
+                MaterialPageRoute(builder: (context) => DetailScreen(movie: movie))),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
