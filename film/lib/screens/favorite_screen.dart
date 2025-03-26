@@ -20,26 +20,21 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
   }
 
   Future<void> _loadFavorites() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  List<String>? favoriteList = prefs.getStringList('favorites');
-  if (favoriteList != null) {
-    setState(() {
-      favoriteMovies = favoriteList
-          .map((movieJson) {
-            try {
-              return Movie.fromJson(jsonDecode(movieJson));
-            } catch (e) {
-              print("Error decoding movie: $e");
-              return null;
-            }
-          })
-          .where((movie) => movie != null)
-          .cast<Movie>()
-          .toList();
-    });
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String>? favoriteList = prefs.getStringList('favorites');
+    if (favoriteList != null) {
+      setState(() {
+        favoriteMovies = favoriteList.map((movieJson) {
+          try {
+            return Movie.fromJson(jsonDecode(movieJson));
+          } catch (e) {
+            print("Error decoding movie: \$e");
+            return null;
+          }
+        }).whereType<Movie>().toList();
+      });
+    }
   }
-}
-
 
   Future<void> _removeFromFavorites(Movie movie) async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
@@ -62,12 +57,19 @@ class _FavoriteScreenState extends State<FavoriteScreen> {
               itemBuilder: (context, index) {
                 final movie = favoriteMovies[index];
                 return ListTile(
-                  leading: Image.network(
-                    'https://image.tmdb.org/t/p/w200${movie.posterPath}',
-                    width: 50,
-                    height: 75,
-                    fit: BoxFit.cover,
-                  ),
+                  leading: movie.posterPath.isNotEmpty
+                      ? Image.network(
+                          'https://image.tmdb.org/t/p/w200${movie.posterPath}',
+                          width: 50,
+                          height: 75,
+                          fit: BoxFit.cover,
+                        )
+                      : Container(
+                          width: 50,
+                          height: 75,
+                          color: Colors.grey,
+                          child: const Icon(Icons.image_not_supported),
+                        ),
                   title: Text(movie.title),
                   subtitle: Text('Rating: ${movie.voteAverage}'),
                   trailing: IconButton(

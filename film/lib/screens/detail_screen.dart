@@ -1,4 +1,4 @@
-import 'dart:convert';
+
 
 import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -33,22 +33,20 @@ class _DetailScreenState extends State<DetailScreen> {
   }
 
   Future<void> _toggleFavorite() async {
-  SharedPreferences prefs = await SharedPreferences.getInstance();
-  List<String> favoriteMovies = prefs.getStringList('favorites') ?? [];
+    SharedPreferences prefs = await SharedPreferences.getInstance();
+    List<String> favoriteMovies = prefs.getStringList('favorites') ?? [];
+    
+    if (isFavorite) {
+      favoriteMovies.remove(widget.movie.id.toString());
+    } else {
+      favoriteMovies.add(widget.movie.id.toString());
+    }
 
-  String movieJson = jsonEncode(widget.movie.toString());
-  if (isFavorite) {
-    favoriteMovies.remove(movieJson);
-  } else {
-    favoriteMovies.add(movieJson);
+    await prefs.setStringList('favorites', favoriteMovies);
+    setState(() {
+      isFavorite = !isFavorite;
+    });
   }
-
-  await prefs.setStringList('favorites', favoriteMovies);
-  setState(() {
-    isFavorite = !isFavorite;
-  });
-}
-
 
   @override
   Widget build(BuildContext context) {
@@ -78,34 +76,7 @@ class _DetailScreenState extends State<DetailScreen> {
                 fit: BoxFit.cover,
               ),
               const SizedBox(height: 20),
-              const Text('Overview:',
-                  style: TextStyle(fontSize: 20, fontWeight: FontWeight.bold)),
-              const SizedBox(height: 10),
               Text(widget.movie.overview, textAlign: TextAlign.justify),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  const Icon(Icons.calendar_month, color: Colors.blue),
-                  const SizedBox(width: 10),
-                  const Text('Release Date:',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 10),
-                  Text(widget.movie.releaseDate)
-                ],
-              ),
-              const SizedBox(height: 20),
-              Row(
-                children: [
-                  const Icon(Icons.star, color: Colors.amber),
-                  const SizedBox(width: 10),
-                  const Text('Rating:',
-                      style:
-                          TextStyle(fontSize: 16, fontWeight: FontWeight.bold)),
-                  const SizedBox(width: 10),
-                  Text(widget.movie.voteAverage.toString())
-                ],
-              )
             ],
           ),
         ),

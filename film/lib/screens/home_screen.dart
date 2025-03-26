@@ -1,18 +1,19 @@
+
 import 'package:film/models/movie.dart';
 import 'package:film/screens/detail_screen.dart';
 import 'package:film/services/api_service.dart';
 import 'package:flutter/material.dart';
 
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
-  @override 
+  @override
   State<HomeScreen> createState() => _HomeScreenState();
 }
 
 class _HomeScreenState extends State<HomeScreen> {
   final ApiService _apiService = ApiService();
-
   List<Movie> _allMovies = [];
   List<Movie> _trendingMovies = [];
   List<Movie> _popularMovies = [];
@@ -23,7 +24,7 @@ class _HomeScreenState extends State<HomeScreen> {
       final List<Map<String, dynamic>> _allMoviesData = await _apiService.getAllMovies();
       final List<Map<String, dynamic>> _trendingMoviesData = await _apiService.getTrendingMovies();
       final List<Map<String, dynamic>> _popularMoviesData = await _apiService.getPopularMovies();
-    
+      
       setState(() {
         _allMovies = _allMoviesData.map((e) => Movie.fromJson(e)).toList();
         _trendingMovies = _trendingMoviesData.map((e) => Movie.fromJson(e)).toList();
@@ -81,8 +82,10 @@ class _HomeScreenState extends State<HomeScreen> {
             itemBuilder: (context, index) {
               final Movie movie = movies[index];
               return GestureDetector(
-                onTap: () => Navigator.push(context, 
-                MaterialPageRoute(builder: (context) => DetailScreen(movie: movie))),
+                onTap: () => Navigator.push(
+                  context, 
+                  MaterialPageRoute(builder: (context) => DetailScreen(movie: movie))
+                ),
                 child: Padding(
                   padding: const EdgeInsets.all(8.0),
                   child: Column(
@@ -118,3 +121,4 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 }
+
